@@ -3,19 +3,17 @@
 
 #**************************************
 # DESCRIPTION
-#    
-# AUTHOR
-#    Anderson
+#    Script to install Zabbix Agent version 4 on Linux distros based on RHEL 7
 # SOURCE
-#                               
+#    https://github.com/andersoncode42/zabbix
 #**************************************
 
 
-# Configurations
-readonly ZBX_AG_PKG="zabbix40-agent" # Required
-readonly ZBX_AG_PORT="10050"
+# MY PARTAMETERS
+readonly ZBX_SRV_IP="1.2.3.4" # <=== Replace with the ip of your zabbix server
 
-readonly ZBX_SRV_IP="10.0.255.2" #Required
+readonly ZBX_AG_PKG="zabbix40-agent"
+readonly ZBX_AG_PORT="10050"
 
 readonly CFG_FILE="/etc/zabbix_agentd.conf"
 readonly CFG_REGEX_SERVER="s/Server=127.0.0.1/Server=127.0.0.1,${ZBX_SRV_IP}/g"
@@ -35,7 +33,7 @@ EOM
 
 readonly TEST_COMMAND="zabbix_get -s 127.0.0.1 -k net.tcp.port[${ZBX_SRV_IP},10051]"
 
-
+# Function used to create a header text for each step
 step(){
     printf "\n\n"
     sleep 2
@@ -45,7 +43,7 @@ step(){
 }
 
 
-step "INSTALATION"
+step "INSTALLATION"
 echo "---> Remove any packages that already exist"
 yum -y remove "zabbix*"
 echo "---> Installing Zabbix Agent"
