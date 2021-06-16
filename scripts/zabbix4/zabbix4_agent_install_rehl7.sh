@@ -1,12 +1,13 @@
 #!/bin/bash
 
 
-#**************************************
+#************************************************
 # DESCRIPTION
-#    Script to install Zabbix Agent version 4 on Linux distros based on RHEL 7
+#    Script to install Zabbix Agent version 4
+#    on Linux distros based on RHEL 7
 # SOURCE
 #    https://github.com/andersoncode42/zabbix
-#**************************************
+#************************************************
 
 
 # MY PARTAMETERS

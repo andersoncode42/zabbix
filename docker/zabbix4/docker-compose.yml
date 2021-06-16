@@ -1,0 +1,83 @@
+#************************************************
+# DESCRIPTION
+#    Docker-Compose that raises 
+#    a Zabbix environment, ready to use
+# SOURCE
+#    https://github.com/andersoncode42/zabbix
+#************************************************
+
+version: "3.9"
+#-- Network is optional
+networks:
+    default:
+        name: zabbix_network
+#--
+services:
+#---------------------------------------------------------
+# https://hub.docker.com/_/postgres
+#---------------------------------------------------------
+    ZABBIX_DATABASE:
+        image: ${PG_IMG}
+        container_name: ${PG_NAME} 
+        restart: always
+        environment:
+            - POSTGRES_USER=${PG_USER}
+            - POSTGRES_PASSWORD=${PG_PASS}
+            - POSTGRES_DB=${PG_DB}
+            - PGDATA=${PG_DATA}
+        volumes:
+            - "${VOLUME}//${PG_NAME}:${PG_DATA}"
+#---------------------------------------------------------
+# https://hub.docker.com/r/zabbix/zabbix-server-pgsql
+#---------------------------------------------------------
+    ZABBIX_SERVER:
+        image: ${SRV_IMG}
+        container_name: ${SRV_NAME}
+        depends_on:
+            - ZABBIX_DATABASE
+        environment:
+            - DB_SERVER_HOST=${PG_NAME}
+            - DB_SERVER_PORT=${PG_PORT}
+            - POSTGRES_DB=${PG_DB}
+            - POSTGRES_USER=${PG_USER}
+            - POSTGRES_PASSWORD=${PG_PASS}
+            - ZBX_DEBUGLEVEL=${DEBUGLEVEL}
+#---------------------------------------------------------
+# https://hub.docker.com/r/zabbix/zabbix-web-nginx-pgsql
+#---------------------------------------------------------
+    ZABBIX_WEB:
+        image: ${WEB_IMG}
+        container_name: ${WEB_NAME}
+        depends_on:
+            - ZABBIX_SERVER
+        # timezone: https://www.php.net/manual/en/timezones.php
+        #         e https://www.php.net/manual/en/timezones.america.php
+        environment: 
+            - ZBX_SERVER_HOST=${SRV_NAME}
+            - ZBX_SERVER_PORT=${SRV_PORT}
+            #
+            - DB_SERVER_HOST=${PG_NAME}
+            - DB_SERVER_PORT=${PG_PORT}
+            #
+            - POSTGRES_DB=${PG_DB}
+            - POSTGRES_USER=${PG_USER}
+            - POSTGRES_PASSWORD=${PG_PASS}
+            #
+            - PHP_TZ=${TZ}
+        ports:
+             - "${WEB_EXTERNAL_PORT}:8080"
+#---------------------------------------------------------
+#  https://hub.docker.com/r/zabbix/zabbix-agent
+#---------------------------------------------------------
+    ZABBIX_AGENT:
+        image: ${AGENT_IMG}
+        container_name: ${AGENT_NAME} # XXX
+        hostname: ${AGENT_NAME} # XXX
+        privileged: true
+        environment:
+            - ZBX_HOSTNAME=${AGENT_NAME} # XXX
+            - ZBX_SERVER_HOST=${SRV_NAME}
+            - ZBX_DEBUGLEVEL=${DEBUGLEVEL}
+        volumes:
+            - "${VOLUME}//shared:/shared"
+    #---
